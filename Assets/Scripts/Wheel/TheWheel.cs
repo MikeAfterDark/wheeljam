@@ -4,13 +4,18 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
-using Unity.Mathematics;
 
 // CODE (C) Colin McInerney 2025
 
-public enum WheelState { AwaitingSelection, Rotating, NoInput }
+public enum WheelState
+{
+    AwaitingSelection,
+    Rotating,
+    NoInput,
+}
 
 public class TheWheel : MonoBehaviour
 {
@@ -33,27 +38,38 @@ public class TheWheel : MonoBehaviour
     #endregion
 
     #region Private Fields
-    [SerializeField] private Transform[] slices; // these are the triangles of varying sizes that rotate and multiply by x1, x2, x3 or x4
-    [SerializeField] private Transform[] covers; // once a quadrant is selected, it becomes disabled for selection, and these appear overlaid on the quadrant to communicate that
-    [SerializeField] private Transform selector; // players input to move this -- controlled by sending a Vector into the ProcessInput function
-    [SerializeField] private Transform sliceGimbal; // this is the thing that actually gets rotated
-    
-    [SerializeField] private int[] baseNumbers = new int[] { -2, -1, 1, 2 }; // order these from lowest value to greatest
-    [SerializeField] private int[] sliceValues = new int[] { 1, 2, 3, 4 }; // these should also be lowest to greatest
+    [SerializeField]
+    private Transform[] slices; // these are the triangles of varying sizes that rotate and multiply by x1, x2, x3 or x4
 
-    [SerializeField] private AnimationCurve curve; // used to evaluate how the turn animates
-    
+    [SerializeField]
+    private Transform[] covers; // once a quadrant is selected, it becomes disabled for selection, and these appear overlaid on the quadrant to communicate that
+
+    [SerializeField]
+    private Transform selector; // players input to move this -- controlled by sending a Vector into the ProcessInput function
+
+    [SerializeField]
+    private Transform sliceGimbal; // this is the thing that actually gets rotated
+
+    [SerializeField]
+    private int[] baseNumbers = new int[] { -2, -1, 1, 2 }; // order these from lowest value to greatest
+
+    [SerializeField]
+    private int[] sliceValues = new int[] { 1, 2, 3, 4 }; // these should also be lowest to greatest
+
+    [SerializeField]
+    private AnimationCurve curve; // used to evaluate how the turn animates
+
     private Dictionary<Vector3, int> _valueMappings; // this gets set in Awake -- ties a direction to a baseNumber value randomly
     private WheelState _state = WheelState.AwaitingSelection; // don't touch this unless you know what you're doing lol
     private int _numSelections = 0; // how many selections total have been made
     private WheelPayload _currentValue; // this is the actual current value selected
-    
+
     // declaring directions as rotations here
     private readonly Vector3 _dirUp = new Vector3(0f, 0f, 0f);
     private readonly Vector3 _dirRight = new Vector3(0f, 0f, 270f);
     private readonly Vector3 _dirDown = new Vector3(0f, 0f, 180f);
     private readonly Vector3 _dirLeft = new Vector3(0f, 0f, 90f);
-    
+
     private readonly int _targetSelections = 4; // how many selections _should_ be made
     #endregion
 
@@ -63,13 +79,13 @@ public class TheWheel : MonoBehaviour
     {
         Reset(); // all the setup is contained in reset
     }
-    
+
     // throw this out and use unity's new input system or whatever plugin you decide, get your input, and pass it off through the ProcessDirectionInput() and ProcessConfirmInput() methods; this is only here for demonstration purposes and is inefficient and inflexible
     private void Update()
     {
         if (_state != WheelState.AwaitingSelection) // this is used in some other places too but as a failsafe i put it here
             return;
-        
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             ProcessConfirmInput();
@@ -87,19 +103,19 @@ public class TheWheel : MonoBehaviour
             ProcessDirectionInput(Vector2.up);
             return;
         }
-        
+
         if (Input.GetKeyDown(KeyCode.S))
         {
             ProcessDirectionInput(-Vector2.up);
             return;
         }
-        
+
         if (Input.GetKeyDown(KeyCode.A))
         {
             ProcessDirectionInput(-Vector2.right);
             return;
         }
-        
+
         if (Input.GetKeyDown(KeyCode.D))
         {
             ProcessDirectionInput(Vector2.right);
@@ -112,12 +128,12 @@ public class TheWheel : MonoBehaviour
     public void ProcessDirectionInput(Vector2 input) // once you get your directional input from whatever, pass it into this function to change the direction of the wheel
     {
         Vector3 cacheDir = selector.eulerAngles;
-        
+
         if (_state != WheelState.AwaitingSelection)
         {
             return;
         }
-        
+
         if (input.x > 0)
         {
             selector.eulerAngles = _dirRight;
@@ -141,7 +157,7 @@ public class TheWheel : MonoBehaviour
             newDirChosen?.Invoke(_currentValue);
         }
     }
-    
+
     public void ProcessConfirmInput()
     {
         if (_state != WheelState.AwaitingSelection)
@@ -163,17 +179,17 @@ public class TheWheel : MonoBehaviour
             }
         }
     }
-    
+
     // you can call this independently if you want feature parity with TES4
     public void Rotate()
     {
         if (_state != WheelState.AwaitingSelection) // in case we skipped ProcessConfirmInput()
             return;
-        
+
         _state = WheelState.Rotating;
         rotationStarted?.Invoke(_currentValue);
-        
-        StartCoroutine(RotateSlices(new Vector3(0, 0, -90)));
+
+        StartCoroutine(RotateSlices(-90));
     }
 
     [ContextMenu("Reset")]
@@ -182,9 +198,9 @@ public class TheWheel : MonoBehaviour
         selector.eulerAngles = Vector3.zero; // remove this if you don't want the selector to reset up every time
         sliceGimbal.localEulerAngles = Vector3.zero;
         _numSelections = 0;
-        
+
         List<Vector3> directions = GetDirectionsList();
-        
+
         // hide the covers
         for (int i = 0; i < directions.Count; i++)
         {
@@ -195,20 +211,20 @@ public class TheWheel : MonoBehaviour
         // repopulate list (could probably combine these but i added this later and that's how i'm living my life)
         directions = GetDirectionsList();
         _valueMappings = new Dictionary<Vector3, int>();
-        
+
         for (int i = 0; i < slices.Length; i++)
         {
             Vector3 dir = directions[UnityEngine.Random.Range(0, directions.Count)];
-            
+
             _valueMappings.Add(dir, baseNumbers[i]);
             directions.Remove(dir);
         }
-        
+
         InitializeSlices();
-        
+
         _currentValue = GetCurrentWheelValue();
         newDirChosen?.Invoke(_currentValue);
-        
+
         _state = WheelState.AwaitingSelection;
     }
     #endregion
@@ -230,36 +246,33 @@ public class TheWheel : MonoBehaviour
 
     private List<Vector3> GetDirectionsList()
     {
-        List<Vector3> directions = new List<Vector3>
-        {
-            _dirUp,
-            _dirRight,
-            _dirDown,
-            _dirLeft
-        };
+        List<Vector3> directions = new List<Vector3> { _dirUp, _dirRight, _dirDown, _dirLeft };
 
         return directions;
     }
-    
-    private IEnumerator RotateSlices(Vector3 newEuler)
-    {
-        Quaternion newRotation = Quaternion.Euler(sliceGimbal.eulerAngles + newEuler);
-        Quaternion startRotation = sliceGimbal.localRotation;
-        
-        float timer = 0f;
 
+    private IEnumerator RotateSlices(float angle)
+    {
+        Quaternion startRotation = sliceGimbal.localRotation;
+        Quaternion targetRotation = Quaternion.Euler(0f, 0f, angle) * startRotation;
+
+        float timer = 0f;
         float lastKeyTime = curve.keys[^1].time;
-        
+
         while (timer < lastKeyTime)
         {
-            math.remap(0f, lastKeyTime, 0f, 1f, timer);
-            sliceGimbal.localRotation = Quaternion.Lerp(startRotation, newRotation, curve.Evaluate(timer));
+            float t = math.remap(0f, lastKeyTime, 0f, 1f, timer);
+            sliceGimbal.localRotation = Quaternion.Lerp(
+                startRotation,
+                targetRotation,
+                curve.Evaluate(t)
+            );
             timer += Time.deltaTime;
-            
+
             yield return null;
         }
 
-        sliceGimbal.rotation = newRotation;
+        sliceGimbal.localRotation = targetRotation;
 
         _currentValue = GetCurrentWheelValue();
         newDirChosen?.Invoke(_currentValue);
@@ -284,7 +297,7 @@ public class TheWheel : MonoBehaviour
     private WheelPayload GetCurrentWheelValue()
     {
         WheelPayload wp = new WheelPayload();
-        
+
         foreach (KeyValuePair<Vector3, int> kvp in _valueMappings)
         {
             if ((int)selector.eulerAngles.z == (int)kvp.Key.z)
@@ -301,7 +314,7 @@ public class TheWheel : MonoBehaviour
                 }
             }
         }
-        
+
         return null; // you fricked up
     }
     #endregion
