@@ -127,7 +127,7 @@ public class TheWheel : MonoBehaviour
     #region Public Methods
     public void ProcessDirectionInput(Vector2 input) // once you get your directional input from whatever, pass it into this function to change the direction of the wheel
     {
-        Vector3 cacheDir = selector.eulerAngles;
+        Vector3 cacheDir = selector.localEulerAngles;
 
         if (_state != WheelState.AwaitingSelection)
         {
@@ -136,22 +136,22 @@ public class TheWheel : MonoBehaviour
 
         if (input.x > 0)
         {
-            selector.eulerAngles = _dirRight;
+            selector.localEulerAngles = _dirRight;
         }
         else if (input.x < 0)
         {
-            selector.eulerAngles = _dirLeft;
+            selector.localEulerAngles = _dirLeft;
         }
         else if (input.y > 0)
         {
-            selector.eulerAngles = _dirUp;
+            selector.localEulerAngles = _dirUp;
         }
         else if (input.y < 0)
         {
-            selector.eulerAngles = _dirDown;
+            selector.localEulerAngles = _dirDown;
         }
 
-        if (selector.eulerAngles != cacheDir)
+        if (selector.localEulerAngles != cacheDir)
         {
             _currentValue = GetCurrentWheelValue();
             newDirChosen?.Invoke(_currentValue);
@@ -195,7 +195,7 @@ public class TheWheel : MonoBehaviour
     [ContextMenu("Reset")]
     public void Reset()
     {
-        selector.eulerAngles = Vector3.zero; // remove this if you don't want the selector to reset up every time
+        selector.localEulerAngles = Vector3.zero; // remove this if you don't want the selector to reset up every time
         sliceGimbal.localEulerAngles = Vector3.zero;
         _numSelections = 0;
 
@@ -300,7 +300,7 @@ public class TheWheel : MonoBehaviour
 
         foreach (KeyValuePair<Vector3, int> kvp in _valueMappings)
         {
-            if ((int)selector.eulerAngles.z == (int)kvp.Key.z)
+            if ((int)selector.localEulerAngles.z == (int)kvp.Key.z)
             {
                 for (int i = 0; i < slices.Length; i++)
                 {
