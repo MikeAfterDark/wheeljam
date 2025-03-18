@@ -6105,6 +6105,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1224763069}
     m_Modifications:
+    - target: {fileID: 2451940264981807385, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
+      propertyPath: selector2
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4943131313248171659, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4943131313248171659, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4943131313248171659, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5937893941906283576, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.88
@@ -6167,6 +6183,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6544073538195150258, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7913277602810388607, guid: 6c262b57e364c774fa04e2f8cf3986e6, type: 3}
+      propertyPath: m_SpriteSortPoint
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
