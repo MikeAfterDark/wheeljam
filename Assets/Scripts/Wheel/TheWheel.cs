@@ -92,34 +92,36 @@ public class TheWheel : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && _numSelections == 0)
         {
             Rotate();
             return;
         }
 
+        Vector3 camForward = Camera.main.transform.forward;
+        Vector3 camRight = Camera.main.transform.right;
+
+        camForward.y = 0;
+        camRight.y = 0;
+        camForward.Normalize();
+        camRight.Normalize();
+
+        Vector2 inputDirection = Vector2.zero;
+
         if (Input.GetKeyDown(KeyCode.W))
-        {
-            ProcessDirectionInput(Vector2.up);
-            return;
-        }
+            inputDirection = new Vector2(camForward.x, camForward.z);
 
         if (Input.GetKeyDown(KeyCode.S))
-        {
-            ProcessDirectionInput(-Vector2.up);
-            return;
-        }
+            inputDirection = new Vector2(-camForward.x, -camForward.z);
 
         if (Input.GetKeyDown(KeyCode.A))
-        {
-            ProcessDirectionInput(-Vector2.right);
-            return;
-        }
+            inputDirection = new Vector2(-camRight.x, -camRight.z);
 
         if (Input.GetKeyDown(KeyCode.D))
-        {
-            ProcessDirectionInput(Vector2.right);
-        }
+            inputDirection = new Vector2(camRight.x, camRight.z);
+
+        if (inputDirection != Vector2.zero)
+            ProcessDirectionInput(inputDirection);
     }
 
     #endregion
@@ -130,25 +132,21 @@ public class TheWheel : MonoBehaviour
         Vector3 cacheDir = selector.localEulerAngles;
 
         if (_state != WheelState.AwaitingSelection)
-        {
             return;
-        }
 
-        if (input.x > 0)
+        if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
         {
-            selector.localEulerAngles = _dirRight;
+            if (input.x > 0)
+                selector.localEulerAngles = _dirRight;
+            else
+                selector.localEulerAngles = _dirLeft;
         }
-        else if (input.x < 0)
+        else
         {
-            selector.localEulerAngles = _dirLeft;
-        }
-        else if (input.y > 0)
-        {
-            selector.localEulerAngles = _dirUp;
-        }
-        else if (input.y < 0)
-        {
-            selector.localEulerAngles = _dirDown;
+            if (input.y > 0)
+                selector.localEulerAngles = _dirUp;
+            else
+                selector.localEulerAngles = _dirDown;
         }
 
         if (selector.localEulerAngles != cacheDir)

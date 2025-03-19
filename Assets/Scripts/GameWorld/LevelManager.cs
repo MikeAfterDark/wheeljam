@@ -27,6 +27,7 @@ public class LevelManager : MonoBehaviour
     public string levelName;
     public Transform grid;
     public Transform cameraTarget;
+    public GameObject levelSelector;
 
     // NOTE: Round stuffs
     private enum RoundState
@@ -89,6 +90,16 @@ public class LevelManager : MonoBehaviour
         { // Load the level
             StartCoroutine(LoadLevel(EditorTool.LoadLevelData(levelName)));
         }
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            levelSelector.SetActive(true);
+            CameraSpinController.StartSpinning();
+        }
+    }
+
+    public void LoadLevelByName(string name)
+    {
+        StartCoroutine(LoadLevel(EditorTool.LoadLevelData(name)));
     }
 
     public IEnumerator LoadLevel(string[][][] voxels)
@@ -222,6 +233,7 @@ public class LevelManager : MonoBehaviour
 
         EditorTool.PrintVoxels(board);
         PositionGameElements(width, height);
+        CameraSpinController.StopSpinning();
     }
 
     private void PositionGameElements(int width, int height)
@@ -231,6 +243,8 @@ public class LevelManager : MonoBehaviour
 
         roundStateText.transform.localPosition = new Vector3(0, (height / 2.0f) + 1, 0.1f);
         cameraTarget.localPosition = cameraTargetOffset + center;
+        wheel.transform.localPosition = center; //new Vector3(-1.5f, 1, height / 2.0f);
+        wheel.transform.localScale = new Vector3(width / 2.0f, height / 2.0f, 1);
     }
 
     void HandleClick(Interactible clickedObject)

@@ -14,6 +14,9 @@ public class Interactible
 
     public bool hoverable = true;
     public bool clickable = true;
+    private static GameObject clicked = null;
+    private bool hovered = false;
+    public Color outlineColor = Color.white;
     private bool prevFrameClickable = false;
     private Outline outline;
 
@@ -22,6 +25,7 @@ public class Interactible
     void Awake()
     {
         outline = GetComponent<Outline>();
+        outline.enabled = false;
         prevFrameClickable = !clickable;
     }
 
@@ -29,8 +33,13 @@ public class Interactible
     {
         if (prevFrameClickable != clickable)
         {
-            outline.OutlineColor = clickable ? Color.green : Color.white;
+            // outline.OutlineColor = clickable ? Color.green : Color.white;
             prevFrameClickable = clickable;
+        }
+
+        if (clickable && clicked != gameObject && !hovered)
+        {
+            outline.enabled = false;
         }
     }
 
@@ -43,22 +52,31 @@ public class Interactible
         if (clickable)
         {
             OnClicked?.Invoke(this);
+            clicked = gameObject;
+            outline.enabled = true;
         }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        hovered = true;
         if (hoverable)
         {
+            if (outline.OutlineColor != outlineColor)
+            {
+                outline.OutlineColor = outlineColor;
+            }
             outline.enabled = true;
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (hoverable)
+        if (hoverable && clicked != gameObject)
         {
             outline.enabled = false;
         }
+
+        hovered = false;
     }
 }
