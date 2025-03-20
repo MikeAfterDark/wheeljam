@@ -28,6 +28,9 @@ public class LevelManager : MonoBehaviour
     public Transform grid;
     public Transform cameraTarget;
     public GameObject levelSelector;
+    private List<Interactible> movers;
+    public GameObject nextPhaseButton;
+    public bool completedLevel;
 
     // NOTE: Round stuffs
     private enum RoundState
@@ -81,10 +84,7 @@ public class LevelManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.C))
         { // cycle through the roundstates
-            roundState = (RoundState)(
-                ((int)roundState + 1) % Enum.GetValues(typeof(RoundState)).Length
-            );
-            UpdateRoundStateVisuals();
+            NextPhase();
         }
         if (Input.GetKeyDown(KeyCode.V))
         { // Load the level
@@ -95,6 +95,71 @@ public class LevelManager : MonoBehaviour
             levelSelector.SetActive(true);
             CameraSpinController.StartSpinning();
         }
+
+        if (movers != null)
+        {
+            if (roundState == RoundState.Plan)
+            {
+                bool allMovesSet = true;
+                // string debug = "Counts: ";
+                foreach (Interactible mover in movers)
+                {
+                    // debug += mover.selections.Count + ", ";
+                    if (mover.selections.Count < 4)
+                    {
+                        allMovesSet = false;
+                    }
+                }
+                // Debug.Log(debug);
+                nextPhaseButton.SetActive(allMovesSet);
+            }
+            else if (roundState == RoundState.Play)
+            {
+                bool allMoved = true;
+                foreach (Interactible mover in movers)
+                {
+                    if (!mover.moved)
+                    {
+                        allMoved = false;
+                    }
+                }
+                if (allMoved && !completedLevel)
+                {
+                    NextPhase();
+                }
+                else if (allMoved && completedLevel)
+                {
+                    // TODO: add 'completed' tag on current level
+                    levelSelector.SetActive(true);
+                }
+            }
+        }
+    }
+
+    public void NextPhase()
+    {
+        roundState = (RoundState)(
+            ((int)roundState + 1) % Enum.GetValues(typeof(RoundState)).Length
+        );
+
+        if (roundState == RoundState.Plan)
+        {
+            foreach (Interactible mover in movers)
+            {
+                mover.PhaseReset();
+                mover.outline.enabled = false;
+            }
+        }
+        else if (roundState == RoundState.Play)
+        {
+            nextPhaseButton.SetActive(false);
+            foreach (Interactible mover in movers)
+            {
+                mover.theWheel.gameObject.SetActive(false);
+                mover.outline.enabled = false;
+            }
+        }
+        UpdateRoundStateVisuals();
     }
 
     public void LoadLevelByName(string name)
@@ -110,6 +175,12 @@ public class LevelManager : MonoBehaviour
             yield break;
         }
         EditorTool.PrintVoxels(voxels);
+        if (movers == null)
+        {
+            movers = new List<Interactible>();
+        }
+
+        movers.Clear();
 
         int paddingPerSide = 2;
         int depth = voxels.Length;
@@ -183,6 +254,10 @@ public class LevelManager : MonoBehaviour
                                 z
                             );
                             board[z][x + paddingPerSide][y + paddingPerSide] = graph;
+                            if (voxelData[0] == "Bulldozer")
+                            {
+                                movers.Add(instantiatedPrefab.GetComponent<Interactible>());
+                            }
                         }
                     }
 
@@ -231,6 +306,7 @@ public class LevelManager : MonoBehaviour
             }
         }
 
+        completedLevel = false;
         EditorTool.PrintVoxels(board);
         PositionGameElements(width, height);
         CameraSpinController.StopSpinning();
@@ -244,23 +320,35 @@ public class LevelManager : MonoBehaviour
         roundStateText.transform.localPosition = new Vector3(0, (height / 2.0f) + 1, 0.1f);
         cameraTarget.localPosition = cameraTargetOffset + center;
         wheel.transform.localPosition = center; //new Vector3(-1.5f, 1, height / 2.0f);
-        wheel.transform.localScale = new Vector3(width / 2.0f, height / 2.0f, 1);
+
+        float max = Mathf.Max(width / 2.0f, height / 2.0f);
+        wheel.transform.localScale = new Vector3(max, max, 1);
+        wheel.transform.eulerAngles = new Vector3(90, 0, 0);
     }
 
     void HandleClick(Interactible clickedObject)
     {
         if (roundState == RoundState.Plan)
         {
+            clickedObject.moved = false;
+            clickedObject.theWheel.gameObject.SetActive(true);
             // Activate the Wheel and pass the clicked object
-            wheel.SetActive(true);
-            Debug.Log("Wheel activated on: " + clickedObject.gameObject.name);
+            // wheel.SetActive(true);
+            // Debug.Log("Wheel activated on: " + clickedObject.gameObject.name);
         }
         else if (roundState == RoundState.Play)
         {
-            // Get the queued events from the clicked object
-            foreach (var action in clickedObject.queuedEvents)
+            if (!clickedObject.moved)
             {
-                Debug.Log("Executing Action: " + action);
+                // Get the queued events from the clicked object
+                foreach (var action in clickedObject.queuedEvents)
+                {
+                    Debug.Log("Executing Action: " + action);
+                }
+                clickedObject.moved = true; // TODO: move this to wherever the movers actually finish moving,
+                // TODO: when all are 'moved', we need to check that all the objectives are complete:
+                // 1. if yes then go back to level select screen and mark the level as completed
+                // 2. if not then call NextPhase()
             }
         }
     }

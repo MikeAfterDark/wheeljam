@@ -32,9 +32,11 @@ public class TheWheel : MonoBehaviour
 
     #region Events
     public UnityEvent<WheelPayload> newDirChosen;
+    public UnityEvent<Vector2Int> newDirSelected;
     public UnityEvent<WheelPayload> rotationStarted;
     public UnityEvent rotationFinished;
     public UnityEvent puzzleFinished;
+    public UnityEvent resetWheel;
     #endregion
 
     #region Private Fields
@@ -74,6 +76,15 @@ public class TheWheel : MonoBehaviour
     #endregion
 
     #region Unity Methods
+
+    private void Awake()
+    {
+        if (newDirSelected == null)
+            newDirSelected = new UnityEvent<Vector2Int>();
+
+        if (resetWheel == null)
+            resetWheel = new UnityEvent();
+    }
 
     private void Start()
     {
@@ -172,6 +183,22 @@ public class TheWheel : MonoBehaviour
                     c.gameObject.SetActive(true);
                     Rotate();
                     _numSelections++;
+
+                    Vector2Int direction = Vector2Int.zero;
+                    Vector3 euler = selector.localEulerAngles;
+                    float zRotation = Mathf.Round(euler.z) % 360;
+
+                    if (zRotation == 0f)
+                        direction = Vector2Int.up;
+                    else if (zRotation == 90f)
+                        direction = Vector2Int.left;
+                    else if (zRotation == 180f)
+                        direction = Vector2Int.down;
+                    else if (zRotation == 270f)
+                        direction = Vector2Int.right;
+
+                    int strength = 1; // MIKEY TODO: get strength from the slices... map the rotation of the selector to the value somehow
+                    newDirSelected?.Invoke(direction * strength);
                     return;
                 }
             }
@@ -222,6 +249,7 @@ public class TheWheel : MonoBehaviour
 
         _currentValue = GetCurrentWheelValue();
         newDirChosen?.Invoke(_currentValue);
+        resetWheel?.Invoke();
 
         _state = WheelState.AwaitingSelection;
     }
