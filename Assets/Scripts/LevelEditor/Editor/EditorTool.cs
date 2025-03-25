@@ -72,15 +72,15 @@ public class EditorTool : EditorWindow
             return null;
         }
 
-        string path = $"{Application.dataPath}/Levels/{fileName}.json";
+        // string path = $"{Application.dataPath}/Levels/{fileName}.json";
+        //
+        // if (!File.Exists(path))
+        // {
+        //     Debug.LogError("Level file not found.");
+        //     return null;
+        // }
 
-        if (!File.Exists(path))
-        {
-            Debug.LogError("Level file not found.");
-            return null;
-        }
-
-        string json = File.ReadAllText(path);
+        string json = Resources.Load<TextAsset>("Levels/fileName").text;
         VoxelData data = JsonConvert.DeserializeObject<VoxelData>(json);
         Debug.Log("Loaded Voxel Data");
         return data.layers;

@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 
 public enum VoxelTypes
@@ -88,7 +91,7 @@ public class LevelManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.V))
         { // Load the level
-            StartCoroutine(LoadLevel(EditorTool.LoadLevelData(levelName)));
+            StartCoroutine(LoadLevel(LoadLevelData(levelName)));
         }
         if (Input.GetKeyDown(KeyCode.B))
         {
@@ -164,7 +167,7 @@ public class LevelManager : MonoBehaviour
 
     public void LoadLevelByName(string name)
     {
-        StartCoroutine(LoadLevel(EditorTool.LoadLevelData(name)));
+        StartCoroutine(LoadLevel(LoadLevelData(name)));
     }
 
     public IEnumerator LoadLevel(string[][][] voxels)
@@ -174,7 +177,7 @@ public class LevelManager : MonoBehaviour
             Debug.LogError($"Failed to load level {levelName}, voxels array is null");
             yield break;
         }
-        EditorTool.PrintVoxels(voxels);
+        // EditorTool.PrintVoxels(voxels);
         if (movers == null)
         {
             movers = new List<Interactible>();
@@ -307,7 +310,7 @@ public class LevelManager : MonoBehaviour
         }
 
         completedLevel = false;
-        EditorTool.PrintVoxels(board);
+        // EditorTool.PrintVoxels(board);
         PositionGameElements(width, height);
         CameraSpinController.StopSpinning();
     }
@@ -373,4 +376,34 @@ public class LevelManager : MonoBehaviour
         roundStateText.color = stateColors[roundState];
         floorRenderer.material.color = stateColors[roundState];
     }
+
+    // WARN: SECTION COPIED FROM EDITORTOOL CUZ UNITY DOESN'T COMPILE EDITOR TOOLS
+    [Serializable]
+    public class VoxelData
+    {
+        public string[][][] layers;
+    }
+
+    public static string[][][] LoadLevelData(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName))
+        {
+            Debug.LogError("Filename is empty.");
+            return null;
+        }
+
+        // string path = $"{Application.dataPath}/Levels/{fileName}.json";
+        //
+        // if (!File.Exists(path))
+        // {
+        //     Debug.LogError("Level file not found.");
+        //     return null;
+        // }
+
+        string json = Resources.Load<TextAsset>($"Levels/{fileName}").text;
+        VoxelData data = JsonConvert.DeserializeObject<VoxelData>(json);
+        Debug.Log("Loaded Voxel Data");
+        return data.layers;
+    }
+    // WARN: SECTION COPIED FROM EDITORTOOL CUZ UNITY DOESN'T COMPILE EDITOR TOOLS
 }

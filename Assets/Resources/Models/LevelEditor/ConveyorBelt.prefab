@@ -55,7 +55,7 @@ PrefabInstance:
     - target: {fileID: -7635826562936255635, guid: 5de9b6eee569a9652a65d1a06224c27d, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
-      objectReference: {fileID: 2100000, guid: 1e42d179bf88bb7d1ac8e168e409ea45, type: 2}
+      objectReference: {fileID: -4006060255634593130, guid: 5de9b6eee569a9652a65d1a06224c27d, type: 3}
     - target: {fileID: 919132149155446097, guid: 5de9b6eee569a9652a65d1a06224c27d, type: 3}
       propertyPath: m_Name
       value: ConveyorBelt
