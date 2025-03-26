@@ -655,9 +655,8 @@ GameObject:
   - component: {fileID: 5937893941906283576}
   - component: {fileID: 2451940264981807385}
   - component: {fileID: 6874447430514474836}
-  - component: {fileID: -2776635187909976320}
   m_Layer: 0
-  m_Name: Wheel
+  m_Name: OLD-Wheel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -690,7 +689,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6544073538195150258}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24fe2861454a04840836c59363dad7b7, type: 3}
   m_Name: 
@@ -764,65 +763,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   camera: {fileID: 0}
---- !u!114 &-2776635187909976320
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544073538195150258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9ec0430c992707a88a41b68c78bb7d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  state: 0
-  rotationTime: 0.2
-  rotationAnimationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  slices:
-  - {fileID: 6221285641318056810}
-  - {fileID: 5760933031183637305}
-  - {fileID: 4195931047179066952}
-  - {fileID: 8567458956176304885}
-  covers:
-  - {fileID: 4256373174391743213}
-  - {fileID: 6228550340266337833}
-  - {fileID: 6719273267793464607}
-  - {fileID: 8816026475217971070}
-  selector: {fileID: 4943131313248171659}
-  sliceGimbal: {fileID: 8604711620703073014}
-  sliceReference: 0
-  sliceValues: 04000000030000000200000001000000
-  selectedDir: 0
-  newDirSelected:
-    m_PersistentCalls:
-      m_Calls: []
-  resetWheel:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &6654684156024365809
 GameObject:
   m_ObjectHideFlags: 0
