@@ -23,7 +23,7 @@ public class Interactible
     public bool moved = false;
 
     public string[] queuedEvents = { "Attack", "Move", "Heal" };
-    public TheWheel theWheel;
+    public Wheel theWheel;
     public Queue<Vector2Int> selections;
 
     public Transform globalWheel;
