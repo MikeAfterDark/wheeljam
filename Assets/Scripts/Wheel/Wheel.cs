@@ -21,7 +21,7 @@ public enum SelectionDir
 public class Wheel : MonoBehaviour
 {
     public WheelStates state;
-    public float rotationTime = 1.0f;
+    public float rotationTime = 0.4f;
     public AnimationCurve rotationAnimationCurve;
 
     public Transform[] slices;
@@ -30,11 +30,15 @@ public class Wheel : MonoBehaviour
     public Transform sliceGimbal;
 
     public int sliceReference = 0;
-    public int[] sliceValues = new int[] { 4, 1, 2, 3 };
+    public int[] sliceValues = new int[] { 4, 3, 2, 1 }; //selectiondir is counterclockwise
+    public int[] sliceSelectionMap = new int[] { 0, 3, 2, 1 };
     private Camera mainCamera;
 
     private int currentSelectionIndex = 0;
     public SelectionDir selectedDir = SelectionDir.Up;
+    public Vector3 normalSliceScale = new Vector3(1, 1, 1);
+    public Vector3 highlightedSliceScale = new Vector3(1.2f, 1.2f, 1.2f);
+    public float highlightedScaleHeight = 0.5f;
 
     public UnityEvent<Vector2Int> newDirSelected;
     public UnityEvent resetWheel;
@@ -57,9 +61,10 @@ public class Wheel : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // Select();
             if (Select())
+            {
                 Rotate();
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -73,12 +78,16 @@ public class Wheel : MonoBehaviour
         }
 
         Vector2 dir = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        MoveSelector(dir);
+        if (dir != Vector2.zero)
+        {
+            MoveSelector(dir);
+        }
+        UpdateSelectorIndicator();
     }
 
     bool Select()
     {
-        if (covers[(int)selectedDir].gameObject.active)
+        if (covers[(int)selectedDir].gameObject.activeSelf)
             return false;
         covers[(int)selectedDir].gameObject.SetActive(true);
 
@@ -90,6 +99,7 @@ public class Wheel : MonoBehaviour
         );
         int strength = sliceValues[((int)selectedDir + sliceReference) % 4];
 
+        Debug.Log("Selected: " + (direction * strength).ToString());
         newDirSelected?.Invoke(direction * strength);
         return true;
     }
@@ -119,16 +129,13 @@ public class Wheel : MonoBehaviour
         }
 
         sliceGimbal.localRotation = Quaternion.Euler(0, 0, endAngle);
-        // currentSelectionIndex = (currentSelectionIndex + 1) % slices.Length;
         state = WheelStates.Idle;
         sliceReference = (sliceReference + 1) % 4;
+        selectedDir = (SelectionDir)(((int)selectedDir + 3) % 4);
     }
 
     void MoveSelector(Vector2 dir)
     {
-        if (dir == Vector2.zero)
-            return;
-
         Vector3 cameraForward = mainCamera.transform.forward;
         Vector3 cameraRight = mainCamera.transform.right;
 
@@ -150,31 +157,37 @@ public class Wheel : MonoBehaviour
 
         currentSelectionIndex = Mathf.FloorToInt((angle + 45) / 90) % 4;
         selectedDir = (SelectionDir)currentSelectionIndex;
-        Debug.Log($"SelectionDir: {selectedDir}, index: {currentSelectionIndex}");
+        // Debug.Log($"SelectionDir: {selectedDir}, index: {currentSelectionIndex}");
 
         selector.localEulerAngles = new Vector3(0, 0, currentSelectionIndex * 90);
-        // Vector3 worldDirection = (cameraRight * dir.x + cameraForward * dir.y).normalized;
-        // float angle = Mathf.Atan2(worldDirection.z, worldDirection.x) * Mathf.Rad2Deg;
-        // if (angle < 0)
-        //     angle += 360;
-        //
-        // if (angle >= 45 && angle < 135)
-        //     currentSelectionIndex = 0; // Forward
-        // else if (angle >= 135 && angle < 225)
-        //     currentSelectionIndex = 1; // Left
-        // else if (angle >= 225 && angle < 315)
-        //     currentSelectionIndex = 2; // Backward
-        // else
-        //     currentSelectionIndex = 3; // Right
-        // selector.localEulerAngles = the square angle for that selection index
-        //
-        // Debug.Log($"{Time.time}: Moved Selector to Index: {currentSelectionIndex}");
+    }
+
+    public void UpdateSelectorIndicator()
+    {
+        int mapping = ((int)selectedDir + sliceReference + 1) % 4;
+        int index = sliceSelectionMap[mapping];
+
+        slices[index].localScale = highlightedSliceScale;
+        slices[index].localPosition = new Vector3(0, 0, -highlightedScaleHeight);
+        covers[(int)selectedDir].localScale = highlightedSliceScale;
+        covers[(int)selectedDir].localPosition = new Vector3(0, 0, -highlightedScaleHeight);
+        for (int i = 1; i < 4; i++)
+        {
+            index = (index + 1) % 4;
+            slices[index].localScale = normalSliceScale;
+            slices[index].localPosition = Vector3.zero;
+
+            covers[((int)selectedDir + i) % 4].localScale = normalSliceScale;
+            covers[((int)selectedDir + i) % 4].localPosition = Vector3.zero;
+        }
     }
 
     public void Reset()
     {
         state = WheelStates.Idle;
         currentSelectionIndex = 0;
+        selectedDir = SelectionDir.Up;
+        sliceReference = 0;
 
         // Visual indicator resets
         sliceGimbal.localEulerAngles = Vector3.zero;
@@ -182,7 +195,7 @@ public class Wheel : MonoBehaviour
         Stack<float> angleStack = new Stack<float>(new float[] { 0f, 90f, 180f, 270f });
         foreach (Transform slice in slices)
         {
-            float angle = angleStack.Pop();
+            float angle = angleStack.Pop(); // TODO: randomize
             slice.localEulerAngles = new Vector3(0, 0, angle);
         }
         foreach (Transform cover in covers)
