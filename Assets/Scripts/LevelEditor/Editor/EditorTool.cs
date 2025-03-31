@@ -7,6 +7,9 @@ using UnityEngine;
 [Serializable]
 public class VoxelData
 {
+    public string levelName;
+    public string levelDescription;
+    public string levelCreator;
     public string[][][] layers;
 }
 
@@ -14,8 +17,11 @@ public class EditorTool : EditorWindow
 {
     private LevelEditor levelEditor;
 
-    private string saveFile = "";
-    private string loadFile = "";
+    private static string levelName = "";
+    private static string levelDesc = "";
+    private static string levelCreator = "";
+    private static string saveFile = "";
+    private static string loadFile = "";
 
     [MenuItem("Tools/Save Load Tool")]
     public static void ShowWindow()
@@ -28,10 +34,13 @@ public class EditorTool : EditorWindow
         GUILayout.Label("Save/Load Tool", EditorStyles.boldLabel);
 
         // Save Section
-        saveFile = EditorGUILayout.TextField("Save File:", saveFile);
+        levelName = EditorGUILayout.TextField("Level Name:", levelName);
+        levelDesc = EditorGUILayout.TextField("Level Desription:", levelDesc);
+        levelCreator = EditorGUILayout.TextField("Creator Name:", levelCreator);
+        saveFile = EditorGUILayout.TextField("Save File(unique):", saveFile);
         if (GUILayout.Button("Save (overwrites)"))
         {
-            SaveData(saveFile);
+            SaveData(levelName, levelDesc, levelCreator, saveFile);
         }
 
         // Load Section
@@ -47,7 +56,7 @@ public class EditorTool : EditorWindow
         }
     }
 
-    private void SaveData(string fileName)
+    private void SaveData(string name, string desc, string creator, string fileName)
     {
         if (string.IsNullOrEmpty(fileName))
         {
@@ -56,7 +65,13 @@ public class EditorTool : EditorWindow
         }
 
         var voxels = GetLevelEditor().GetLevelFromTilemaps();
-        VoxelData data = new VoxelData { layers = voxels };
+        VoxelData data = new VoxelData
+        {
+            levelName = name,
+            levelDescription = desc,
+            levelCreator = creator,
+            layers = voxels,
+        };
         string json = JsonConvert.SerializeObject(data, Formatting.Indented);
 
         string path = $"{Application.dataPath}/Levels/{fileName}.json";
@@ -82,6 +97,10 @@ public class EditorTool : EditorWindow
 
         string json = Resources.Load<TextAsset>("Levels/fileName").text;
         VoxelData data = JsonConvert.DeserializeObject<VoxelData>(json);
+        levelName = data.levelName;
+        levelDesc = data.levelDescription;
+        levelCreator = data.levelCreator;
+
         Debug.Log("Loaded Voxel Data");
         return data.layers;
     }

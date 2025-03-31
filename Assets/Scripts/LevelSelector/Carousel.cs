@@ -63,6 +63,13 @@ namespace Christina.UI
             textBoxController = GetComponentInChildren<CarouselTextBox>();
         }
 
+        private void OnEnable()
+        {
+            // TODO: make sure to limit image to be loaded/uploaded, need to restrict filesize
+            //
+            // load all levels metadata:
+        }
+
         private void Start()
         {
             foreach (var entry in entries)
